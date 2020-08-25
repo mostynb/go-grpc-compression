@@ -26,6 +26,7 @@ package zstd
 import (
 	"io"
 	"io/ioutil"
+	"runtime"
 	"sync"
 
 	zstdlib "github.com/klauspost/compress/zstd"
@@ -56,7 +57,9 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		return &writer{Encoder: w, pool: &c.poolCompressor}
+		writer := &writer{Encoder: w, pool: &c.poolCompressor}
+		runtime.SetFinalizer(writer, finalizeWriter)
+		return writer
 	}
 	encoding.RegisterCompressor(c)
 }
@@ -73,7 +76,9 @@ func SetLevel(level zstdlib.EncoderLevel) error {
 			return err
 		}
 
-		return &writer{Encoder: w, pool: &c.poolCompressor}
+		writer := &writer{Encoder: w, pool: &c.poolCompressor}
+		runtime.SetFinalizer(writer, finalizeWriter)
+		return writer
 	}
 
 	return nil
@@ -92,7 +97,9 @@ func (c *compressor) Decompress(r io.Reader) (io.Reader, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &reader{Decoder: newZ, pool: &c.poolDecompressor}, nil
+		reader := &reader{Decoder: newZ, pool: &c.poolDecompressor}
+		runtime.SetFinalizer(reader, finalizeReader)
+		return reader, nil
 	}
 	if err := z.Reset(r); err != nil {
 		c.poolDecompressor.Put(z)
@@ -117,4 +124,16 @@ func (z *reader) Read(p []byte) (n int, err error) {
 		z.pool.Put(z)
 	}
 	return n, err
+}
+
+func finalizeReader(r *reader) {
+	if r.Decoder != nil {
+		r.Decoder.Close()
+	}
+}
+
+func finalizeWriter(w *writer) {
+	if w.Encoder != nil {
+		w.Encoder.Close()
+	}
 }
