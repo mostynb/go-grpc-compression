@@ -51,7 +51,7 @@ type reader struct {
 func init() {
 	c := &compressor{}
 	c.poolCompressor.New = func() interface{} {
-		w := snappylib.NewWriter(ioutil.Discard)
+		w := snappylib.NewBufferedWriter(ioutil.Discard)
 		return &writer{Writer: w, pool: &c.poolCompressor}
 	}
 	encoding.RegisterCompressor(c)
