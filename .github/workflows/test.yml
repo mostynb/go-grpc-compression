@@ -1,0 +1,21 @@
+name: go test
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  linux:
+    name: go test
+    runs-on: ubuntu-18.04
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: test
+        run: |
+          set -euo pipefail
+          go test ./...
