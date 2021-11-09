@@ -71,12 +71,19 @@ func TestRoundTrip(t *testing.T) {
 		assert.NoError(t, lis.Close())
 	})
 
+	done := make(chan struct{}, 1)
+
 	s := grpc.NewServer()
+	defer func() {
+		s.GracefulStop()
+		<-done
+	}()
 	testserver.RegisterTestServerServer(s, &testserver.EchoTestServer{})
 	go func() {
 		if err := s.Serve(lis); err != nil && err != grpc.ErrServerStopped {
 			t.Errorf("Server exited with error: %v", err)
 		}
+		done <- struct{}{}
 	}()
 
 	ctx := context.Background()
