@@ -3,4 +3,4 @@ PROTOC := docker run --rm -u ${shell id -u} -v${PWD}:${PWD} -w${PWD} ${OTEL_DOCK
 
 .PHONY: genproto
 genproto:
-	$(PROTOC) --go_out=plugins=grpc:. internal/testing/testserver.proto
+	$(PROTOC) --go_out=plugins=grpc:. internal/testserver/testserver.proto
