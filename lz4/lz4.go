@@ -27,7 +27,7 @@ import (
 	"io/ioutil"
 	"sync"
 
-	lz4lib "github.com/pierrec/lz4/v3"
+	lz4lib "github.com/pierrec/lz4/v4"
 	"google.golang.org/grpc/encoding"
 )
 
