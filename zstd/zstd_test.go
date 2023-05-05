@@ -28,7 +28,9 @@ import (
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/test/bufconn"
 
@@ -92,7 +94,7 @@ func TestRoundTrip(t *testing.T) {
 			return lis.Dial()
 		}),
 		grpc.WithDefaultCallOptions(grpc.UseCompressor(Name)),
-		grpc.WithInsecure())
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		assert.NoError(t, conn.Close())
