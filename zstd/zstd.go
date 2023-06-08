@@ -31,16 +31,6 @@ var encoderOptions = []zstd.EOption{
 	// The default zstd window size is 8MB, which is much larger than the
 	// typical RPC message and wastes a bunch of memory.
 	zstd.WithWindowSize(512 * 1024),
-	// By default zstd uses GOMAXPROCS (64 in prod) threads to encode a
-	// given input, which is overkill for a typical RPC message and
-	// further wastes memory.
-	zstd.WithEncoderConcurrency(1),
-}
-
-var decoderOptions = []zstd.DOption{
-	// Similar, zstd uses GOMAXPROCS threads for decoding, which is
-	// overkill.
-	zstd.WithDecoderConcurrency(1),
 }
 
 type compressor struct {
@@ -50,7 +40,7 @@ type compressor struct {
 
 func init() {
 	enc, _ := zstd.NewWriter(nil, encoderOptions...)
-	dec, _ := zstd.NewReader(nil, decoderOptions...)
+	dec, _ := zstd.NewReader(nil)
 	c := &compressor{
 		encoder: enc,
 		decoder: dec,
