@@ -54,7 +54,9 @@ func init() {
 		w := snappylib.NewBufferedWriter(ioutil.Discard)
 		return &writer{Writer: w, pool: &c.poolCompressor}
 	}
-	encoding.RegisterCompressor(c)
+	if encoding.GetCompressor(c.Name()) == nil {
+		encoding.RegisterCompressor(c)
+	}
 }
 
 func (c *compressor) Compress(w io.Writer) (io.WriteCloser, error) {

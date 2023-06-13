@@ -45,7 +45,9 @@ func init() {
 		encoder: enc,
 		decoder: dec,
 	}
-	encoding.RegisterCompressor(c)
+	if encoding.GetCompressor(c.Name()) == nil {
+		encoding.RegisterCompressor(c)
+	}
 }
 
 // SetLevel updates the registered compressor to use a particular compression
