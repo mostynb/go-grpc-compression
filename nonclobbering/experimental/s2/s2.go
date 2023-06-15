@@ -12,25 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package github.com/mostynb/go-grpc-compression/lz4 is a wrapper for
-// using github.com/pierrec/lz4 with gRPC.
+// Package github.com/mostynb/go-grpc-compression/nonclobbering/experimental/s2
+// is a wrapper for using github.com/klauspost/compress/s2 stream compression
+// with gRPC.
 //
-// If you import this package, it will register itself as the encoder for
-// the "lz4" compressor, overriding any previously registered compressors
-// with this name.
+// If you import this package, it will only register itself as the encoder
+// for the "s2" compressor if no other compressors have already been
+// registered with that name.
 //
-// If you don't want to override previously registered "lz4" compressors,
+// If you do want to override previously registered "s2" compressors,
 // then you should instead import
-// github.com/mostynb/go-grpc-compression/nonclobbering/lz4
-package lz4
+// github.com/mostynb/go-grpc-compression/experimental/s2
+package s2
 
 import (
-	internallz4 "github.com/mostynb/go-grpc-compression/internal/zstd"
+	internals2 "github.com/mostynb/go-grpc-compression/internal/s2"
 )
 
-const Name = internallz4.Name
+const Name = internals2.Name
 
 func init() {
-	clobbering := true
-	internallz4.PretendInit(clobbering)
+	clobbering := false
+	internals2.PretendInit(clobbering)
 }

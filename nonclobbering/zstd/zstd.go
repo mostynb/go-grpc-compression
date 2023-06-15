@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package github.com/mostynb/go-grpc-compression/zstd is a wrapper for
-// using github.com/klauspost/compress/zstd with gRPC.
+// Package github.com/mostynb/go-grpc-compression/nonclobbering/zstd is a
+// wrapper for using github.com/klauspost/compress/zstd with gRPC.
 //
-// If you import this package, it will register itself as the encoder for
-// the "zstd" compressor, overriding any previously registered compressors
-// with this name.
+// If you import this package, it will only register itself as the encoder
+// for the "zstd" compressor if no other compressors have already been
+// registered with that name.
 //
-// If you don't want to override previously registered "zstd" compressors,
+// If you do want to override previously registered "zstd" compressors,
 // then you should instead import
-// github.com/mostynb/go-grpc-compression/nonclobbering/zstd
+// github.com/mostynb/go-grpc-compression/zstd
 package zstd
 
 import (
@@ -33,7 +33,7 @@ import (
 const Name = internalzstd.Name
 
 func init() {
-	clobbering := true
+	clobbering := false
 	internalzstd.PretendInit(clobbering)
 }
 

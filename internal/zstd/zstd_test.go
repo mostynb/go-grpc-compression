@@ -1,18 +1,22 @@
-// Copyright 2022 Mostyn Bramley-Moore.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ *
+ * Copyright 2021 gRPC authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 
-package s2
+package zstd
 
 import (
 	"bytes"
@@ -21,8 +25,10 @@ import (
 	"net"
 	"testing"
 
+	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/encoding"
@@ -33,31 +39,41 @@ import (
 
 const (
 	bufSize = 1024
-	message = "Message Request s2"
+	message = "Message Request zSTD"
 )
 
 func TestRegisteredCompression(t *testing.T) {
-	comp := encoding.GetCompressor(Name)
-	require.NotNil(t, comp)
-	assert.Equal(t, Name, comp.Name())
+	clobbering := true
+	PretendInit(clobbering)
 
-	buf := bytes.NewBuffer(make([]byte, 0, bufSize))
-	wc, err := comp.Compress(buf)
-	require.NoError(t, err)
+	for _, lvl := range []zstd.EncoderLevel{zstd.SpeedFastest, zstd.SpeedDefault, zstd.SpeedBetterCompression, zstd.SpeedBestCompression} {
+		require.NoError(t, SetLevel(lvl))
 
-	_, err = wc.Write([]byte(message))
-	require.NoError(t, err)
-	assert.NoError(t, wc.Close())
+		comp := encoding.GetCompressor(Name)
+		require.NotNil(t, comp)
+		assert.Equal(t, Name, comp.Name())
 
-	r, err := comp.Decompress(buf)
-	require.NoError(t, err)
-	expected, err := ioutil.ReadAll(r)
-	require.NoError(t, err)
+		buf := bytes.NewBuffer(make([]byte, 0, bufSize))
+		wc, err := comp.Compress(buf)
+		require.NoError(t, err)
 
-	assert.Equal(t, message, string(expected))
+		_, err = wc.Write([]byte(message))
+		require.NoError(t, err)
+		assert.NoError(t, wc.Close())
+
+		r, err := comp.Decompress(buf)
+		require.NoError(t, err)
+		expected, err := ioutil.ReadAll(r)
+		require.NoError(t, err)
+
+		assert.Equal(t, message, string(expected))
+	}
 }
 
 func TestRoundTrip(t *testing.T) {
+	clobbering := true
+	PretendInit(clobbering)
+
 	lis := bufconn.Listen(bufSize)
 	t.Cleanup(func() {
 		assert.NoError(t, lis.Close())

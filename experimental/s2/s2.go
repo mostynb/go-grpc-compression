@@ -1,4 +1,4 @@
-// Copyright 2022 Mostyn Bramley-Moore.
+// Copyright 2023 Mostyn Bramley-Moore.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,73 +14,27 @@
 
 // Package s2 is an experimental wrapper for using
 // github.com/klauspost/compress/s2 stream compression with gRPC.
+
+// Package github.com/mostynb/go-grpc-compression/s2 is an experimental
+// wrapper for using github.com/klauspost/compress/s2 stream compression
+// with gRPC.
+//
+// If you import this package, it will register itself as the encoder for
+// the "s2" compressor, overriding any previously registered compressors
+// with this name.
+//
+// If you don't want to override previously registered "s2" compressors,
+// then you should instead import
+// github.com/mostynb/go-grpc-compression/nonclobbering/s2
 package s2
 
 import (
-	"io"
-	"io/ioutil"
-	"sync"
-
-	"github.com/klauspost/compress/s2"
-	"google.golang.org/grpc/encoding"
+	internals2 "github.com/mostynb/go-grpc-compression/internal/s2"
 )
 
-const Name = "s2"
-
-type compressor struct {
-	poolCompressor   sync.Pool
-	poolDecompressor sync.Pool
-}
-
-type writer struct {
-	*s2.Writer
-	pool *sync.Pool
-}
-
-type reader struct {
-	*s2.Reader
-	pool *sync.Pool
-}
+const Name = internals2.Name
 
 func init() {
-	c := &compressor{}
-	c.poolCompressor.New = func() interface{} {
-		w := s2.NewWriter(ioutil.Discard, s2.WriterConcurrency(1))
-		return &writer{Writer: w, pool: &c.poolCompressor}
-	}
-	encoding.RegisterCompressor(c)
-}
-
-func (c *compressor) Compress(w io.Writer) (io.WriteCloser, error) {
-	s := c.poolCompressor.Get().(*writer)
-	s.Writer.Reset(w)
-	return s, nil
-}
-
-func (c *compressor) Decompress(r io.Reader) (io.Reader, error) {
-	s, inPool := c.poolDecompressor.Get().(*reader)
-	if !inPool {
-		newR := s2.NewReader(r)
-		return &reader{Reader: newR, pool: &c.poolDecompressor}, nil
-	}
-	s.Reset(r)
-	return s, nil
-}
-
-func (c *compressor) Name() string {
-	return Name
-}
-
-func (s *writer) Close() error {
-	err := s.Writer.Close()
-	s.pool.Put(s)
-	return err
-}
-
-func (s *reader) Read(p []byte) (n int, err error) {
-	n, err = s.Reader.Read(p)
-	if err == io.EOF {
-		s.pool.Put(s)
-	}
-	return n, err
+	clobbering := true
+	internals2.PretendInit(clobbering)
 }

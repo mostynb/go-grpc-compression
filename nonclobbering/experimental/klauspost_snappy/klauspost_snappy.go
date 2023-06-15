@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package github.com/mostynb/go-grpc-compression/experimental/klauspost_snappy
+// Package github.com/mostynb/go-grpc-compression/nonclobbering/klauspost_snappy
 // is a wrapper for using github.com/klauspost/compress/s2 in snappy
 // compatibility mode with gRPC. It might be more efficient than
 // github.com/mostynb/go-grpc-compression/snappy and
@@ -22,13 +22,13 @@
 // Note that this is registered under the name "snappy" with gRPC, so only
 // one of these packages should be used at a time.
 //
-// If you import this package, it will register itself as the encoder for
-// the "snappy" compressor, overriding any previously registered compressors
-// with this name.
+// If you import this package, it will only register itself as the encoder
+// for the "snappy" compressor if no other compressors have already been
+// registered with that name.
 //
-// If you don't want to override previously registered "snappy" compressors,
+// If you do want to override previously registered "snappy" compressors,
 // then you should instead import
-// github.com/mostynb/go-grpc-compression/nonclobbering/experimental/klauspost_snappy
+// github.com/mostynb/go-grpc-compression/klauspost_snappy
 package klauspost_snappy
 
 import (
@@ -38,6 +38,6 @@ import (
 const Name = internalsnappy.Name
 
 func init() {
-	clobbering := true
+	clobbering := false
 	internalsnappy.PretendInit(clobbering)
 }

@@ -16,7 +16,7 @@
  *
  */
 
-package snappy
+package lz4
 
 import (
 	"bytes"
@@ -41,6 +41,9 @@ const (
 )
 
 func TestRegisteredCompression(t *testing.T) {
+	clobbering := true
+	PretendInit(clobbering)
+
 	comp := encoding.GetCompressor(Name)
 	require.NotNil(t, comp)
 	assert.Equal(t, Name, comp.Name())
@@ -62,6 +65,9 @@ func TestRegisteredCompression(t *testing.T) {
 }
 
 func TestRoundTrip(t *testing.T) {
+	clobbering := true
+	PretendInit(clobbering)
+
 	lis := bufconn.Listen(bufSize)
 	t.Cleanup(func() {
 		assert.NoError(t, lis.Close())
