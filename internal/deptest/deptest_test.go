@@ -25,9 +25,10 @@ import (
 
 	// If these were moved above, the test would fail because
 	// testlib has the same no-clobber logic as the main packages.
-	_ "github.com/mostynb/go-grpc-compression/lz4"
-	_ "github.com/mostynb/go-grpc-compression/snappy"
-	_ "github.com/mostynb/go-grpc-compression/zstd"
+	_ "github.com/mostynb/go-grpc-compression/nonclobbering/lz4"
+	_ "github.com/mostynb/go-grpc-compression/nonclobbering/snappy"
+	_ "github.com/mostynb/go-grpc-compression/nonclobbering/zstd"
+
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/encoding"
 )
