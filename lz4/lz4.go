@@ -25,7 +25,7 @@
 package lz4
 
 import (
-	internallz4 "github.com/mostynb/go-grpc-compression/internal/zstd"
+	internallz4 "github.com/mostynb/go-grpc-compression/internal/lz4"
 )
 
 const Name = internallz4.Name
