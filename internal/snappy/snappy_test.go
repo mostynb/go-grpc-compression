@@ -88,8 +88,7 @@ func TestRoundTrip(t *testing.T) {
 		done <- struct{}{}
 	}()
 
-	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet",
+	conn, err := grpc.NewClient("passthrough://bufnet",
 		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 			return lis.Dial()
 		}),
@@ -101,7 +100,7 @@ func TestRoundTrip(t *testing.T) {
 	})
 
 	client := testserver.NewTestServerClient(conn)
-	resp, err := client.SendMessage(ctx, &testserver.MessageRequest{Request: message})
+	resp, err := client.SendMessage(context.Background(), &testserver.MessageRequest{Request: message})
 	require.NoError(t, err)
 	assert.Equal(t, message, resp.Response)
 }
