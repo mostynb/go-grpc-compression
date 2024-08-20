@@ -7,7 +7,7 @@ require (
 	github.com/klauspost/compress v1.17.8
 	github.com/pierrec/lz4/v4 v4.1.21
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.64.1
 	google.golang.org/protobuf v1.34.1
 )
 
