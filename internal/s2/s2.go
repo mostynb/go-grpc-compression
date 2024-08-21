@@ -18,7 +18,6 @@ package s2
 
 import (
 	"io"
-	"io/ioutil"
 	"sync"
 
 	"github.com/klauspost/compress/s2"
@@ -49,7 +48,7 @@ func PretendInit(clobbering bool) {
 
 	c := &compressor{}
 	c.poolCompressor.New = func() interface{} {
-		w := s2.NewWriter(ioutil.Discard, s2.WriterConcurrency(1))
+		w := s2.NewWriter(io.Discard, s2.WriterConcurrency(1))
 		return &writer{Writer: w, pool: &c.poolCompressor}
 	}
 	encoding.RegisterCompressor(c)

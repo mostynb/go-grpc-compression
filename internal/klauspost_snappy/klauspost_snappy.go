@@ -30,7 +30,6 @@ package klauspost_snappy
 
 import (
 	"io"
-	"io/ioutil"
 	"sync"
 
 	snappylib "github.com/klauspost/compress/s2"
@@ -61,7 +60,7 @@ func PretendInit(clobbering bool) {
 
 	c := &compressor{}
 	c.poolCompressor.New = func() interface{} {
-		w := snappylib.NewWriter(ioutil.Discard, snappylib.WriterSnappyCompat())
+		w := snappylib.NewWriter(io.Discard, snappylib.WriterSnappyCompat())
 		return &writer{Writer: w, pool: &c.poolCompressor}
 	}
 	encoding.RegisterCompressor(c)

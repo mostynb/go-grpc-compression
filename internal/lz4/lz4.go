@@ -24,7 +24,6 @@ package lz4
 
 import (
 	"io"
-	"io/ioutil"
 	"sync"
 
 	lz4lib "github.com/pierrec/lz4/v4"
@@ -55,7 +54,7 @@ func PretendInit(clobbering bool) {
 
 	c := &compressor{}
 	c.poolCompressor.New = func() interface{} {
-		w := lz4lib.NewWriter(ioutil.Discard)
+		w := lz4lib.NewWriter(io.Discard)
 		return &writer{Writer: w, pool: &c.poolCompressor}
 	}
 	encoding.RegisterCompressor(c)
