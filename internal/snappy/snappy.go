@@ -24,7 +24,6 @@ package snappy
 
 import (
 	"io"
-	"io/ioutil"
 	"sync"
 
 	snappylib "github.com/golang/snappy"
@@ -55,7 +54,7 @@ func PretendInit(clobbering bool) {
 
 	c := &compressor{}
 	c.poolCompressor.New = func() interface{} {
-		w := snappylib.NewBufferedWriter(ioutil.Discard)
+		w := snappylib.NewBufferedWriter(io.Discard)
 		return &writer{Writer: w, pool: &c.poolCompressor}
 	}
 	encoding.RegisterCompressor(c)

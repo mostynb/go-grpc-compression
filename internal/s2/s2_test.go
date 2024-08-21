@@ -17,7 +17,7 @@ package s2
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net"
 	"testing"
 
@@ -54,7 +54,7 @@ func TestRegisteredCompression(t *testing.T) {
 
 	r, err := comp.Decompress(buf)
 	require.NoError(t, err)
-	expected, err := ioutil.ReadAll(r)
+	expected, err := io.ReadAll(r)
 	require.NoError(t, err)
 
 	assert.Equal(t, message, string(expected))
