@@ -41,10 +41,13 @@ var decoderOptions = []zstd.DOption{
 	zstd.WithDecoderConcurrency(1),
 }
 
-// We will set a finalizer on these objects, so when the go-grpc code is
-// finished with them, they will be added back to compressor.decoderPool.
+// decoderWrapper wraps a zstd.Decoder and explicitly returns it to the pool
+// when the stream is finished reading (on EOF or error).
+// A finalizer is set as a safety net in case the stream is not fully consumed.
 type decoderWrapper struct {
 	*zstd.Decoder
+	pool *sync.Pool
+	once sync.Once
 }
 
 type encoderWrapper struct {
@@ -132,12 +135,14 @@ func (c *compressor) Decompress(r io.Reader) (io.Reader, error) {
 		}
 	}
 
-	wrapper := &decoderWrapper{Decoder: decoder}
+	wrapper := &decoderWrapper{Decoder: decoder, pool: &c.decoderPool}
 	runtime.SetFinalizer(wrapper, func(dw *decoderWrapper) {
-		err := dw.Reset(nil)
-		if err == nil {
-			c.decoderPool.Put(dw.Decoder)
-		}
+		dw.once.Do(func() {
+			err := dw.Reset(nil)
+			if err == nil {
+				c.decoderPool.Put(dw.Decoder)
+			}
+		})
 	})
 
 	return wrapper, nil
@@ -145,4 +150,18 @@ func (c *compressor) Decompress(r io.Reader) (io.Reader, error) {
 
 func (c *compressor) Name() string {
 	return Name
+}
+
+// Read implements io.Reader for decoderWrapper. It explicitly returns
+// the decoder to the pool when EOF or an error is reached, instead of
+// relying solely on the finalizer.
+func (d *decoderWrapper) Read(p []byte) (n int, err error) {
+	n, err = d.Decoder.Read(p)
+	if err != nil {
+		d.once.Do(func() {
+			d.Decoder.Reset(nil)
+			d.pool.Put(d.Decoder)
+		})
+	}
+	return n, err
 }
