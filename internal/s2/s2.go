@@ -56,7 +56,7 @@ func PretendInit(clobbering bool) {
 
 func (c *compressor) Compress(w io.Writer) (io.WriteCloser, error) {
 	s := c.poolCompressor.Get().(*writer)
-	s.Writer.Reset(w)
+	s.Reset(w)
 	return s, nil
 }
 
