@@ -34,6 +34,8 @@ import (
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/test/bufconn"
 
+	"go.uber.org/goleak"
+
 	"github.com/mostynb/go-grpc-compression/internal/testserver"
 )
 
@@ -43,6 +45,7 @@ const (
 )
 
 func TestRegisteredCompression(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	clobbering := true
 	PretendInit(clobbering)
 
@@ -71,6 +74,7 @@ func TestRegisteredCompression(t *testing.T) {
 }
 
 func TestRoundTrip(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	clobbering := true
 	PretendInit(clobbering)
 
@@ -101,9 +105,9 @@ func TestRoundTrip(t *testing.T) {
 		grpc.WithDefaultCallOptions(grpc.UseCompressor(Name)),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
-	t.Cleanup(func() {
+	defer func() {
 		assert.NoError(t, conn.Close())
-	})
+	}()
 
 	client := testserver.NewTestServerClient(conn)
 	resp, err := client.SendMessage(context.Background(), &testserver.MessageRequest{Request: message})
